@@ -1,12 +1,45 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import jwt from 'jsonwebtoken';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  createdAt: string;
+}
 
 export default function Dashboard() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch('/api/auth/user');
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.message);
+        }
+
+        console.log('Kullanıcı Bilgileri:', data.user);
+        setUser(data.user);
+      } catch (error) {
+        console.error('Kullanıcı bilgileri alınamadı:', error);
+        router.push('/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [router]);
 
   const handleLogout = async () => {
     try {
@@ -21,6 +54,14 @@ export default function Dashboard() {
       console.error('Çıkış yapılırken hata oluştu:', error);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -95,9 +136,19 @@ export default function Dashboard() {
                   <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
                 </button>
               </div>
-              <button className="flex items-center text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
-                <img className="w-8 h-8 rounded-full" src="https://ui-avatars.com/api/?name=User&background=random" alt="user photo" />
-              </button>
+              <div className="flex items-center space-x-4">
+                <div className="hidden md:flex flex-col items-end">
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">{user?.name}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</span>
+                </div>
+                <button className="flex items-center text-sm bg-gray-800 rounded-full md:mr-0 focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600">
+                  <img 
+                    className="w-8 h-8 rounded-full" 
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=random`} 
+                    alt="user photo" 
+                  />
+                </button>
+              </div>
             </div>
           </div>
 
