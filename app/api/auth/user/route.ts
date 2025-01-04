@@ -17,7 +17,6 @@ export async function GET() {
             );
         }
 
-        console.log('Aktif token:', token);
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string };
         await connectDB();
