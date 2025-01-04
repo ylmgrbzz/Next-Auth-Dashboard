@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-import Image from 'next/image';
-import DashboardLayout from '../../components/layout/DashboardLayout';
+import React, { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import Image from "next/image";
+import DashboardLayout from "../../components/layout/DashboardLayout";
 
 interface User {
   id: string;
@@ -11,6 +11,7 @@ interface User {
   email: string;
   avatar?: string;
   createdAt: string;
+  role: string;
 }
 
 export default function UserDetail() {
@@ -24,37 +25,38 @@ export default function UserDetail() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
-          router.push('/login');
+          router.push("/login");
           return;
         }
 
         // Giriş yapmış kullanıcının bilgilerini al
-        const currentUserRes = await fetch('/api/auth/user', {
+        const currentUserRes = await fetch("/api/auth/user", {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
-        
+
         if (!currentUserRes.ok) {
-          throw new Error('Kullanıcı bilgileri alınamadı');
+          throw new Error("Kullanıcı bilgileri alınamadı");
         }
 
         const currentUserData = await currentUserRes.json();
+        console.log(currentUserData);
         setCurrentUser(currentUserData.user);
 
         // Görüntülenen kullanıcının bilgilerini al
         const viewedUserRes = await fetch(`/api/users/${userId}`);
         if (!viewedUserRes.ok) {
-          throw new Error('Kullanıcı bilgileri alınamadı');
+          throw new Error("Kullanıcı bilgileri alınamadı");
         }
 
         const viewedUserData = await viewedUserRes.json();
         setViewedUser(viewedUserData.user);
       } catch (error) {
-        console.error('Veri alınırken hata:', error);
-        router.push('/dashboard');
+        console.error("Veri alınırken hata:", error);
+        router.push("/dashboard");
       } finally {
         setLoading(false);
       }
@@ -67,16 +69,16 @@ export default function UserDetail() {
 
   const handleLogout = async () => {
     try {
-      localStorage.removeItem('token');
-      const res = await fetch('/api/auth/logout', {
-        method: 'POST',
+      localStorage.removeItem("token");
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
       });
 
       if (res.ok) {
-        router.push('/login');
+        router.push("/login");
       }
     } catch (error) {
-      console.error('Çıkış yapılırken hata:', error);
+      console.error("Çıkış yapılırken hata:", error);
     }
   };
 
@@ -96,7 +98,7 @@ export default function UserDetail() {
           <div className="relative h-32 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
             <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
           </div>
-          
+
           <div className="relative px-6 pb-6">
             <div className="flex flex-col sm:flex-row items-center gap-6">
               {/* Avatar */}
@@ -112,7 +114,9 @@ export default function UserDetail() {
                     />
                   ) : (
                     <Image
-                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(viewedUser.name)}&size=128&background=random`}
+                      src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        viewedUser.name
+                      )}&size=128&background=random`}
                       alt={viewedUser.name}
                       width={128}
                       height={128}
@@ -133,12 +137,15 @@ export default function UserDetail() {
                 <div className="mt-4 flex flex-wrap gap-4 justify-center sm:justify-start">
                   <div className="bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-full">
                     <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
-                      Kayıt Tarihi: {' '}
-                      {new Date(viewedUser.createdAt).toLocaleDateString('tr-TR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                      Kayıt Tarihi:{" "}
+                      {new Date(viewedUser.createdAt).toLocaleDateString(
+                        "tr-TR",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      )}
                     </span>
                   </div>
                 </div>
@@ -152,12 +159,22 @@ export default function UserDetail() {
           onClick={() => router.back()}
           className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M10 19l-7-7m0 0l7-7m-7 7h18"
+            />
           </svg>
           Geri Dön
         </button>
       </div>
     </DashboardLayout>
   );
-} 
+}

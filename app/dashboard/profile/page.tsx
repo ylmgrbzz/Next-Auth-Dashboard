@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import DashboardLayout from '@/components/layout/DashboardLayout';
-import ProfileHeader from '@/components/profile/ProfileHeader';
-import ProfileInfo from '@/components/profile/ProfileInfo';
-import UsersList from '@/components/profile/UsersList';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import ProfileHeader from "@/components/profile/ProfileHeader";
+import ProfileInfo from "@/components/profile/ProfileInfo";
+import UsersList from "@/components/profile/UsersList";
 
 interface User {
   id: string;
@@ -24,37 +24,37 @@ export default function Profile() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         if (!token) {
-          router.push('/login');
+          router.push("/login");
           return;
         }
 
         // Kullanıcı bilgilerini al
-        const userRes = await fetch('/api/auth/user', {
+        const userRes = await fetch("/api/auth/user", {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
-        
+
         if (!userRes.ok) {
-          throw new Error('Kullanıcı bilgileri alınamadı');
+          throw new Error("Kullanıcı bilgileri alınamadı");
         }
 
         const userData = await userRes.json();
         setUser(userData.user);
 
         // Tüm kullanıcıları al
-        const usersRes = await fetch('/api/users');
+        const usersRes = await fetch("/api/users");
         if (!usersRes.ok) {
-          throw new Error('Kullanıcı listesi alınamadı');
+          throw new Error("Kullanıcı listesi alınamadı");
         }
 
         const usersData = await usersRes.json();
         setUsers(usersData.users);
       } catch (error) {
-        console.error('Veri alınırken hata:', error);
-        router.push('/login');
+        console.error("Veri alınırken hata:", error);
+        router.push("/login");
       } finally {
         setLoading(false);
       }
@@ -65,16 +65,16 @@ export default function Profile() {
 
   const handleLogout = async () => {
     try {
-      localStorage.removeItem('token');
-      const res = await fetch('/api/auth/logout', {
-        method: 'POST',
+      localStorage.removeItem("token");
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
       });
 
       if (res.ok) {
-        router.push('/login');
+        router.push("/login");
       }
     } catch (error) {
-      console.error('Çıkış yapılırken hata:', error);
+      console.error("Çıkış yapılırken hata:", error);
     }
   };
 
@@ -82,22 +82,22 @@ export default function Profile() {
     if (!user) return;
 
     const formData = new FormData();
-    formData.append('avatar', file);
+    formData.append("avatar", file);
 
     try {
       const res = await fetch(`/api/users/${user.id}/avatar`, {
-        method: 'POST',
+        method: "POST",
         body: formData,
       });
 
       if (!res.ok) {
-        throw new Error('Avatar güncellenirken hata oluştu');
+        throw new Error("Avatar güncellenirken hata oluştu");
       }
 
       const data = await res.json();
       setUser(data.user);
     } catch (error) {
-      console.error('Avatar güncellenirken hata:', error);
+      console.error("Avatar güncellenirken hata:", error);
     }
   };
 
@@ -106,21 +106,21 @@ export default function Profile() {
 
     try {
       const res = await fetch(`/api/users/${user.id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
 
       if (!res.ok) {
-        throw new Error('Profil güncellenirken hata oluştu');
+        throw new Error("Profil güncellenirken hata oluştu");
       }
 
       const responseData = await res.json();
       setUser(responseData.user);
     } catch (error) {
-      console.error('Profil güncellenirken hata:', error);
+      console.error("Profil güncellenirken hata:", error);
     }
   };
 
@@ -151,4 +151,4 @@ export default function Profile() {
       </div>
     </DashboardLayout>
   );
-} 
+}
