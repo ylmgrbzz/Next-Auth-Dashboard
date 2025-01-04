@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { message: 'Geçerli bir email adresi girin' },
         { status: 400 }
-      );
+        );
     }
 
     // Şifre uzunluğunu kontrol et
