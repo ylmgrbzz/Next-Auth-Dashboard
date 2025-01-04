@@ -19,9 +19,9 @@ export default function UsersList({ users }: UsersListProps) {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm">
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
           Tüm Kullanıcılar
-        </h3>
+        </h2>
       </div>
       <div className="p-4">
         <div className="flow-root">
@@ -30,13 +30,23 @@ export default function UsersList({ users }: UsersListProps) {
               <li key={user.id} className="py-4">
                 <div className="flex items-center space-x-4">
                   <div className="flex-shrink-0">
-                    <Image
-                      className="w-10 h-10 rounded-full"
-                      src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
-                      alt={user.name}
-                      width={40}
-                      height={40}
-                    />
+                    {user.avatar ? (
+                      <Image
+                        src={user.avatar}
+                        alt={user.name}
+                        width={40}
+                        height={40}
+                        className="rounded-full"
+                      />
+                    ) : (
+                      <Image
+                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=40&background=random`}
+                        alt={user.name}
+                        width={40}
+                        height={40}
+                        className="rounded-full"
+                      />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate dark:text-white">

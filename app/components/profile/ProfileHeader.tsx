@@ -14,8 +14,8 @@ interface ProfileHeaderProps {
 
 export default function ProfileHeader({ user, onAvatarUpdate }: ProfileHeaderProps) {
   const [isHovering, setIsHovering] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -24,42 +24,50 @@ export default function ProfileHeader({ user, onAvatarUpdate }: ProfileHeaderPro
     try {
       setUploading(true);
       await onAvatarUpdate(file);
-    } catch (error) {
-      console.error('Avatar yükleme hatası:', error);
     } finally {
       setUploading(false);
     }
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
-      <div className="flex flex-col sm:flex-row items-center gap-6">
-        <div 
-          className="relative"
+    <div className="relative mb-8">
+      <div className="h-32 bg-gradient-to-r from-blue-500 to-purple-500 rounded-t-lg"></div>
+      <div className="absolute -bottom-16 left-4 sm:left-8">
+        <div
+          className="relative group"
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
-          <div className="w-32 h-32 rounded-full overflow-hidden relative">
-            <Image
-              src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=128&background=random`}
-              alt={user.name}
-              width={128}
-              height={128}
-              className="object-cover"
-            />
-            {isHovering && !uploading && (
-              <div 
-                className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center cursor-pointer"
-                onClick={() => fileInputRef.current?.click()}
-              >
+          <div className="w-32 h-32 rounded-full border-4 border-white dark:border-gray-800 overflow-hidden bg-gray-100 dark:bg-gray-700">
+            {user.avatar ? (
+              <Image
+                src={user.avatar}
+                alt={user.name}
+                width={128}
+                height={128}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <Image
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&size=128&background=random`}
+                alt={user.name}
+                width={128}
+                height={128}
+                className="w-full h-full object-cover"
+              />
+            )}
+            <div
+              className={`absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center transition-opacity cursor-pointer ${
+                isHovering || uploading ? 'opacity-100' : 'opacity-0'
+              }`}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {uploading ? (
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent"></div>
+              ) : (
                 <span className="text-white text-sm">Fotoğrafı Değiştir</span>
-              </div>
-            )}
-            {uploading && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
           <input
             type="file"
@@ -67,24 +75,13 @@ export default function ProfileHeader({ user, onAvatarUpdate }: ProfileHeaderPro
             className="hidden"
             accept="image/*"
             onChange={handleFileChange}
+            disabled={uploading}
           />
         </div>
-        <div className="flex-1 text-center sm:text-left">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {user.name}
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            {user.email}
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2 justify-center sm:justify-start">
-            <span className="px-3 py-1 text-sm bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 rounded-full">
-              Aktif Kullanıcı
-            </span>
-            <span className="px-3 py-1 text-sm bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 rounded-full">
-              Email Doğrulandı
-            </span>
-          </div>
-        </div>
+      </div>
+      <div className="ml-40 pt-4">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{user.name}</h1>
+        <p className="text-gray-600 dark:text-gray-400">{user.email}</p>
       </div>
     </div>
   );
