@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { connectDB } from '../../../../lib/db';
-import User from '../../../../models/User';
+import { connectDB } from '../../../lib/db';
+import User from '../../../models/User';
 
 // Kullanıcı bilgilerini getir
 export async function GET(
