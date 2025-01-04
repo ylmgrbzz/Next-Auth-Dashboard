@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
-import User from '@/models/User';
+import { connectDB } from '../../../../lib/db';
+import User from '../../../../models/User';
 
 export async function POST(
     req: Request,
-    { params }: { params: { id: string } }
+    context: { params: { id: string } }
 ) {
     try {
+        const { id } = await Promise.resolve(context.params);
         await connectDB();
 
         const formData = await req.formData();
@@ -42,7 +43,7 @@ export async function POST(
 
         // Kullanıcıyı güncelle
         const user = await User.findByIdAndUpdate(
-            params.id,
+            id,
             { avatar },
             { new: true }
         ).select('-password');
@@ -65,6 +66,7 @@ export async function POST(
             }
         });
     } catch (error: any) {
+        console.error('Avatar yükleme hatası:', error);
         return NextResponse.json(
             { message: 'Avatar güncellenirken hata oluştu', error: error.message },
             { status: 500 }
