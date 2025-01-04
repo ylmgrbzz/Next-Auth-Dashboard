@@ -10,6 +10,7 @@ if (!JWT_SECRET) {
 
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get('token')?.value;
+  console.log("token", token);
 
   // Public routes
   if (
@@ -31,6 +32,7 @@ export async function middleware(request: NextRequest) {
   // Protected routes
   if (!token) {
     return NextResponse.redirect(new URL('/login', request.url));
+
   }
 
   try {
