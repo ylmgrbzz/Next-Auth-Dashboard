@@ -3,17 +3,12 @@ import jwt from 'jsonwebtoken';
 import User from '../../../models/User';
 import { connectDB } from '../../../lib/db';
 
-if (!process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET is not defined');
-}
-
-const JWT_SECRET: string = process.env.JWT_SECRET;
-const JWT_EXPIRE: string = process.env.JWT_EXPIRE || '30d';
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRE = process.env.JWT_EXPIRE || '30d';
 
 export async function POST(req: Request) {
   try {
     await connectDB();
-
     const { email, password } = await req.json();
 
     if (!email || !password) {
@@ -43,18 +38,22 @@ export async function POST(req: Request) {
 
     const token = jwt.sign(
       { id: user._id.toString() },
-      JWT_SECRET,
+      JWT_SECRET as string,
       { expiresIn: JWT_EXPIRE }
     );
 
+    console.log('Login başarılı! Token:', token);
+
     const response = NextResponse.json(
-      { 
+      {
+        success: true,
         message: 'Giriş başarılı',
         user: {
           id: user._id,
           name: user.name,
           email: user.email
-        }
+        },
+        token
       },
       { status: 200 }
     );
@@ -69,6 +68,7 @@ export async function POST(req: Request) {
     return response;
 
   } catch (error: any) {
+    console.error('Login hatası:', error);
     return NextResponse.json(
       { message: 'Sunucu hatası', error: error.message },
       { status: 500 }
