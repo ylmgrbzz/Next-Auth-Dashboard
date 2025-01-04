@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import User from '@/models/User';
-import connectDB from '@/lib/db';
+import { connectDB } from '@/lib/db';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_EXPIRE = process.env.JWT_EXPIRE;
+
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET is not defined');
+}
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +16,6 @@ export async function POST(req: Request) {
 
     const { email, password } = await req.json();
 
-    // Email ve şifre kontrolü
     if (!email || !password) {
       return NextResponse.json(
         { message: 'Lütfen tüm alanları doldurun' },
@@ -19,7 +23,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Kullanıcıyı bul
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
@@ -29,7 +32,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Şifre kontrolü
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
@@ -39,12 +41,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // JWT token oluştur
     const token = jwt.sign({ id: user._id }, JWT_SECRET, {
-      expiresIn: '30d',
+      expiresIn: JWT_EXPIRE
     });
 
-    // Response
     const response = NextResponse.json(
       { 
         message: 'Giriş başarılı',
@@ -57,10 +57,9 @@ export async function POST(req: Request) {
       { status: 200 }
     );
 
-    // Token'ı cookie olarak kaydet
     response.cookies.set('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 gün
     });

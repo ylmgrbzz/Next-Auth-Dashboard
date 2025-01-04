@@ -1,40 +1,51 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/auth-db';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  throw new Error('MongoDB URI is not defined');
+  throw new Error('MONGODB_URI ortam değişkeni tanımlanmamış!');
 }
 
-let cached = global.mongoose;
+export const connectDB = async () => {
+  try {
+    const { connection } = mongoose;
 
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
+    if (connection.readyState === 1) {
+      console.log('MongoDB bağlantısı zaten aktif.');
+      return;
+    }
 
-async function connectDB() {
-  if (cached.conn) {
-    return cached.conn;
-  }
-
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
+    const options = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      autoIndex: true,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      family: 4
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
-      return mongoose;
+    await mongoose.connect(MONGODB_URI, options);
+
+    connection.on('connected', () => {
+      console.log('MongoDB bağlantısı başarılı.');
     });
+
+    connection.on('error', (err) => {
+      console.error('MongoDB bağlantı hatası:', err);
+    });
+
+    connection.on('disconnected', () => {
+      console.log('MongoDB bağlantısı kesildi.');
+    });
+
+    // Uygulama kapandığında bağlantıyı düzgün şekilde kapat
+    process.on('SIGINT', async () => {
+      await connection.close();
+      process.exit(0);
+    });
+
+  } catch (error) {
+    console.error('MongoDB bağlantı hatası:', error);
+    throw error;
   }
-
-  try {
-    cached.conn = await cached.promise;
-  } catch (e) {
-    cached.promise = null;
-    throw e;
-  }
-
-  return cached.conn;
-}
-
-export default connectDB; 
+}; 
