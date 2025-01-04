@@ -9,18 +9,42 @@ export async function PATCH(
     try {
         await connectDB();
 
-        const { name } = await req.json();
+        const { name, email } = await req.json();
 
-        if (!name) {
+        if (!name && !email) {
             return NextResponse.json(
-                { message: 'İsim alanı zorunludur' },
+                { message: 'Güncellenecek alan bulunamadı' },
                 { status: 400 }
             );
         }
 
+        // Email formatını kontrol et
+        if (email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return NextResponse.json(
+                    { message: 'Geçersiz email formatı' },
+                    { status: 400 }
+                );
+            }
+
+            // Email benzersiz mi kontrol et
+            const existingUser = await User.findOne({ email, _id: { $ne: params.id } });
+            if (existingUser) {
+                return NextResponse.json(
+                    { message: 'Bu email adresi başka bir kullanıcı tarafından kullanılıyor' },
+                    { status: 400 }
+                );
+            }
+        }
+
+        const updateData: { name?: string; email?: string } = {};
+        if (name) updateData.name = name;
+        if (email) updateData.email = email;
+
         const user = await User.findByIdAndUpdate(
             params.id,
-            { name },
+            updateData,
             { new: true }
         ).select('-password');
 

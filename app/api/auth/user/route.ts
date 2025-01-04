@@ -32,13 +32,6 @@ export async function GET() {
             );
         }
 
-        console.log('Kullanıcı bilgileri başarıyla getirildi:', {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            avatar: user.avatar
-        });
-
         return NextResponse.json({
             success: true,
             user: {
