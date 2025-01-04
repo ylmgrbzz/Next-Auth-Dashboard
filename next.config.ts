@@ -6,6 +6,9 @@ const nextConfig = {
     JWT_EXPIRE: process.env.JWT_EXPIRE,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET
+  },
+  images: {
+    domains: ['ui-avatars.com']
   }
 };
 

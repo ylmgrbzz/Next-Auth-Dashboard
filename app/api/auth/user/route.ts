@@ -6,9 +6,8 @@ import User from '../../../models/User';
 
 export async function GET() {
     try {
-        const cookiesList = cookies();
-        console.log(cookiesList);
-        const token = cookiesList.get('token')?.value;
+        const cookieStore = cookies();
+        const token = cookieStore.get('token')?.value;
 
         if (!token) {
             console.log('Token bulunamadı - Kullanıcı giriş yapmamış');
@@ -36,7 +35,8 @@ export async function GET() {
         console.log('Kullanıcı bilgileri başarıyla getirildi:', {
             id: user._id,
             name: user.name,
-            email: user.email
+            email: user.email,
+            avatar: user.avatar
         });
 
         return NextResponse.json({
@@ -45,6 +45,7 @@ export async function GET() {
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                avatar: user.avatar,
                 createdAt: user.createdAt
             }
         });
