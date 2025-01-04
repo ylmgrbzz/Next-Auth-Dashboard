@@ -1,15 +1,21 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '../../../lib/db';
 import User from '../../../models/User';
+import { requireAuth, requireAdmin, isAdmin } from '../../../middleware/authMiddleware';
 
 // Kullanıcı bilgilerini getir
-export async function GET(
-    req: Request,
-    context: { params: { id: string } }
-) {
+export const GET = requireAuth(async (req: Request, currentUser: any, context: { params: { id: string } }) => {
     try {
         const { id } = await Promise.resolve(context.params);
         await connectDB();
+
+        // Admin tüm kullanıcıları görebilir, normal kullanıcı sadece kendini
+        if (currentUser.role !== 'admin' && currentUser._id.toString() !== id) {
+            return NextResponse.json(
+                { message: 'Bu kullanıcının bilgilerini görüntüleme yetkiniz yok' },
+                { status: 403 }
+            );
+        }
 
         const user = await User.findById(id).select('-password');
 
@@ -26,6 +32,7 @@ export async function GET(
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                role: user.role,
                 avatar: user.avatar,
                 createdAt: user.createdAt
             }
@@ -36,28 +43,28 @@ export async function GET(
             { status: 500 }
         );
     }
-}
+});
 
 // Kullanıcı bilgilerini güncelle
-export async function PATCH(
-    req: Request,
-    context: { params: { id: string } }
-) {
+export const PATCH = requireAuth(async (req: Request, currentUser: any, context: { params: { id: string } }) => {
     try {
         const { id } = await Promise.resolve(context.params);
         await connectDB();
 
-        const { name, email } = await req.json();
-
-        if (!name && !email) {
+        // Admin tüm kullanıcıları güncelleyebilir, normal kullanıcı sadece kendini
+        if (currentUser.role !== 'admin' && currentUser._id.toString() !== id) {
             return NextResponse.json(
-                { message: 'Güncellenecek alan bulunamadı' },
-                { status: 400 }
+                { message: 'Bu kullanıcının bilgilerini güncelleme yetkiniz yok' },
+                { status: 403 }
             );
         }
 
-        // Email formatını kontrol et
+        const { name, email, role } = await req.json();
+        const updateData: any = {};
+
+        if (name) updateData.name = name;
         if (email) {
+            // Email formatını kontrol et
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 return NextResponse.json(
@@ -74,11 +81,13 @@ export async function PATCH(
                     { status: 400 }
                 );
             }
+            updateData.email = email;
         }
 
-        const updateData: { name?: string; email?: string } = {};
-        if (name) updateData.name = name;
-        if (email) updateData.email = email;
+        // Sadece admin rol değiştirebilir
+        if (role && currentUser.role === 'admin') {
+            updateData.role = role;
+        }
 
         const user = await User.findByIdAndUpdate(
             id,
@@ -99,6 +108,7 @@ export async function PATCH(
                 id: user._id,
                 name: user.name,
                 email: user.email,
+                role: user.role,
                 avatar: user.avatar,
                 createdAt: user.createdAt
             }
@@ -109,4 +119,31 @@ export async function PATCH(
             { status: 500 }
         );
     }
-} 
+});
+
+// Kullanıcıyı sil (Sadece admin)
+export const DELETE = requireAdmin(async (req: Request, context: { params: { id: string } }) => {
+    try {
+        const { id } = await Promise.resolve(context.params);
+        await connectDB();
+
+        const user = await User.findByIdAndDelete(id);
+
+        if (!user) {
+            return NextResponse.json(
+                { message: 'Kullanıcı bulunamadı' },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json({
+            success: true,
+            message: 'Kullanıcı başarıyla silindi'
+        });
+    } catch (error: any) {
+        return NextResponse.json(
+            { message: 'Kullanıcı silinirken hata oluştu', error: error.message },
+            { status: 500 }
+        );
+    }
+}); 

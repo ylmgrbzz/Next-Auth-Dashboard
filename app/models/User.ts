@@ -1,6 +1,8 @@
 import mongoose from 'mongoose';
 import { hashPassword, comparePasswords } from '../utils/auth';
 
+export type UserRole = 'admin' | 'user';
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -17,6 +19,11 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Lütfen şifrenizi girin'],
     minlength: 6,
     select: false,
+  },
+  role: {
+    type: String,
+    enum: ['admin', 'user'],
+    default: 'user'
   },
   avatar: {
     type: String,
