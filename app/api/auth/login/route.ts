@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
-import User from '@/models/User';
-import { connectDB } from '@/lib/db';
+import User from '../../../models/User';
+import { connectDB } from '../../../lib/db';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRE = process.env.JWT_EXPIRE;
-
-if (!JWT_SECRET) {
+if (!process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is not defined');
 }
+
+const JWT_SECRET: string = process.env.JWT_SECRET;
+const JWT_EXPIRE: string = process.env.JWT_EXPIRE || '30d';
 
 export async function POST(req: Request) {
   try {
@@ -41,9 +41,11 @@ export async function POST(req: Request) {
       );
     }
 
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, {
-      expiresIn: JWT_EXPIRE
-    });
+    const token = jwt.sign(
+      { id: user._id.toString() },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRE }
+    );
 
     const response = NextResponse.json(
       { 
