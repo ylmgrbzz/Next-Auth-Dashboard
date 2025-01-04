@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server';
-import { connectDB } from '@/lib/db';
-import User from '@/models/User';
+import { connectDB } from '../../../../lib/db';
+import User from '../../../../models/User';
 
 // Kullanıcı bilgilerini getir
 export async function GET(
     req: Request,
-    { params }: { params: { id: string } }
+    context: { params: { id: string } }
 ) {
     try {
+        const { id } = await Promise.resolve(context.params);
         await connectDB();
 
-        const user = await User.findById(params.id).select('-password');
+        const user = await User.findById(id).select('-password');
 
         if (!user) {
             return NextResponse.json(
@@ -40,9 +41,10 @@ export async function GET(
 // Kullanıcı bilgilerini güncelle
 export async function PATCH(
     req: Request,
-    { params }: { params: { id: string } }
+    context: { params: { id: string } }
 ) {
     try {
+        const { id } = await Promise.resolve(context.params);
         await connectDB();
 
         const { name, email } = await req.json();
@@ -65,7 +67,7 @@ export async function PATCH(
             }
 
             // Email benzersiz mi kontrol et
-            const existingUser = await User.findOne({ email, _id: { $ne: params.id } });
+            const existingUser = await User.findOne({ email, _id: { $ne: id } });
             if (existingUser) {
                 return NextResponse.json(
                     { message: 'Bu email adresi başka bir kullanıcı tarafından kullanılıyor' },
@@ -79,7 +81,7 @@ export async function PATCH(
         if (email) updateData.email = email;
 
         const user = await User.findByIdAndUpdate(
-            params.id,
+            id,
             updateData,
             { new: true }
         ).select('-password');
