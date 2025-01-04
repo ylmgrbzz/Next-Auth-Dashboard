@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
+import { hashPassword, comparePasswords } from '../utils/auth';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -25,17 +25,17 @@ const userSchema = new mongoose.Schema({
 });
 
 // Şifreyi hashleme
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
     next();
   }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  this.password = await hashPassword(this.password);
+  next();
 });
 
 // Şifre karşılaştırma metodu
-userSchema.methods.matchPassword = async function(enteredPassword: string) {
-  return await bcrypt.compare(enteredPassword, this.password);
+userSchema.methods.matchPassword = async function (enteredPassword: string) {
+  return await comparePasswords(enteredPassword, this.password);
 };
 
 export default mongoose.models.User || mongoose.model('User', userSchema); 
