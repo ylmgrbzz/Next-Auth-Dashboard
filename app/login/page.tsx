@@ -32,6 +32,7 @@ export default function Login() {
         throw new Error(data.message || 'Bir hata oluştu');
       }
 
+      console.log("data",data);    
       localStorage.setItem('token', data.token);
       console.log('Login başarılı! Token:', data.token);
       console.log('Kullanıcı bilgileri:', data.user);
