@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import jwt from 'jsonwebtoken';
 
 interface User {
   id: string;
@@ -19,19 +18,35 @@ export default function Dashboard() {
   const router = useRouter();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    console.log('Stored token:', token);
+
     const fetchUserData = async () => {
       try {
-        const res = await fetch('/api/auth/user');
+        if (!token) {
+          console.log('Token bulunamadı, login sayfasına yönlendiriliyor...');
+          router.push('/login');
+          return;
+        }
+
+        const res = await fetch('/api/auth/user', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
         const data = await res.json();
         
         if (!res.ok) {
           throw new Error(data.message);
         }
 
-        console.log('Kullanıcı Bilgileri:', data.user);
+        console.log('Token:', token);
+        console.log('Kullanıcı bilgileri:', data.user);
         setUser(data.user);
       } catch (error) {
         console.error('Kullanıcı bilgileri alınamadı:', error);
+        localStorage.removeItem('token');
         router.push('/login');
       } finally {
         setLoading(false);
@@ -43,12 +58,17 @@ export default function Dashboard() {
 
   const handleLogout = async () => {
     try {
+      localStorage.removeItem('token');
+      
       const res = await fetch('/api/auth/logout', {
         method: 'POST',
       });
 
       if (res.ok) {
+        console.log('Başarıyla çıkış yapıldı');
         router.push('/login');
+      } else {
+        throw new Error('Çıkış yapılırken bir hata oluştu');
       }
     } catch (error) {
       console.error('Çıkış yapılırken hata oluştu:', error);

@@ -32,6 +32,10 @@ export default function Login() {
         throw new Error(data.message || 'Bir hata oluştu');
       }
 
+      localStorage.setItem('token', data.token);
+      console.log('Login başarılı! Token:', data.token);
+      console.log('Kullanıcı bilgileri:', data.user);
+
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message);

@@ -42,8 +42,6 @@ export async function POST(req: Request) {
       { expiresIn: JWT_EXPIRE }
     );
 
-    console.log('Login başarılı! Token:', token);
-
     const response = NextResponse.json(
       {
         success: true,
