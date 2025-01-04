@@ -12,6 +12,19 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("token")?.value;
   console.log("token", token);
 
+  // Ana sayfa kontrolü
+  if (request.nextUrl.pathname === "/") {
+    if (token) {
+      try {
+        await jwtVerify(token, new TextEncoder().encode(JWT_SECRET));
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      } catch {
+        return NextResponse.next();
+      }
+    }
+    return NextResponse.next();
+  }
+
   // Public routes
   if (
     request.nextUrl.pathname.startsWith("/login") ||
@@ -43,5 +56,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/profile/:path*", "/login", "/signup"],
+  matcher: ["/", "/dashboard/:path*", "/profile/:path*", "/login", "/signup"],
 };
